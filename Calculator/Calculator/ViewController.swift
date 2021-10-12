@@ -11,12 +11,15 @@ class ViewController: UIViewController {
 
     @IBOutlet weak var displayLabel: UILabel!
     
+    @IBOutlet weak var buttonSets: UIButton!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         self.displayLabel.text! = "0"
         UIDevice.current.beginGeneratingDeviceOrientationNotifications()
         NotificationCenter.default.addObserver(self, selector: #selector(self.receivedRotation), name: UIDevice.orientationDidChangeNotification, object: nil)
+        receivedRotation()
     }
     
     @objc func receivedRotation(){
@@ -33,7 +36,8 @@ class ViewController: UIViewController {
         default:
         }
         */
-        for i in 1...19 {
+        //changeRoundedCorner(buttonToChange: buttonSets)
+        for i in 1...49 {
             if let buttonFound = view.viewWithTag(i) as? UIButton {
                 changeRoundedCorner(buttonToChange: (buttonFound))
             }
@@ -41,7 +45,7 @@ class ViewController: UIViewController {
     }
     
     func changeRoundedCorner(buttonToChange: UIButton) {
-        buttonToChange.layer.cornerRadius = buttonToChange.frame.height / 2
+        buttonToChange.layer.cornerRadius = min(buttonToChange.frame.height, (buttonToChange.frame.width)) / 2
     }
     
     var digitOnDisplay: String {
@@ -61,6 +65,14 @@ class ViewController: UIViewController {
         } else {
             digitOnDisplay = sender.currentTitle!
             inTypingMode = true
+        }
+    }
+    
+    @IBAction func titleSwitchRadAndDeg(_ sender: UIButton) {
+        if sender.titleLabel!.text == "Rad" {
+            sender.setTitle("Deg", for: .normal)
+        } else {
+            sender.setTitle("Rad", for: .normal)
         }
     }
     
@@ -85,7 +97,9 @@ class ViewController: UIViewController {
                             return
                         }
                     }
-                    if (String(digitOnDisplay.prefix(dotIndex + 17)).suffix(1) <= "4") {
+                    if abs(Double(truncating: NSDecimalNumber(decimal: result))) < 10e-15 {
+                        digitOnDisplay = "0"
+                    } else if (String(digitOnDisplay.prefix(dotIndex + 17)).suffix(1) <= "4") {
                         digitOnDisplay = String(digitOnDisplay.prefix(dotIndex + 16))
                     } else {
                         let lastChar = String(String(digitOnDisplay.prefix(dotIndex + 16)).suffix(1))
