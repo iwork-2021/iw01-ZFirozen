@@ -182,6 +182,70 @@ class Calculator: NSObject {
         "log₁₀": Operation.UnaryOp{
             op in
             return Decimal(log10(Double(truncating: NSDecimalNumber(decimal: op))))
+        },
+        "yˣ": Operation.BinaryOp{
+            (op1, op2) in
+            return Decimal(pow(Double(truncating: NSDecimalNumber(decimal: op2)), Double(truncating: NSDecimalNumber(decimal: op1))))
+        },
+        "2ˣ": Operation.UnaryOp{
+            op in
+            return Decimal(pow(2, Double(truncating: NSDecimalNumber(decimal: op))))
+        },
+        "logｙ": Operation.BinaryOp{
+            (op1, op2) in
+            return Decimal(log(Double(truncating: NSDecimalNumber(decimal: op1))) / log(Double(truncating: NSDecimalNumber(decimal: op2))))
+        },
+        "log₂": Operation.UnaryOp{
+            op in
+            return Decimal(log2(Double(truncating: NSDecimalNumber(decimal: op))))
+        },
+        "sin⁻¹": Operation.UnaryOp{
+            op in
+            if isUsingRad {
+                return Decimal(asin(Double(truncating: NSDecimalNumber(decimal: op))))
+            } else {
+                return Decimal(asin(Double(truncating: NSDecimalNumber(decimal: op)))) / Decimal.pi * 180
+            }
+        },
+        "cos⁻¹": Operation.UnaryOp{
+            op in
+            if isUsingRad {
+                return Decimal(acos(Double(truncating: NSDecimalNumber(decimal: op))))
+            } else {
+                return Decimal(acos(Double(truncating: NSDecimalNumber(decimal: op)))) / Decimal.pi * 180
+            }
+        },
+        "tan⁻¹": Operation.UnaryOp{
+            op in
+            if isUsingRad {
+                return Decimal(atan(Double(truncating: NSDecimalNumber(decimal: op))))
+            } else {
+                return Decimal(atan(Double(truncating: NSDecimalNumber(decimal: op)))) / Decimal.pi * 180
+            }
+        },
+        "sinh⁻¹": Operation.UnaryOp{
+            op in
+            if isUsingRad {
+                return Decimal(asinh(Double(truncating: NSDecimalNumber(decimal: op))))
+            } else {
+                return Decimal(asinh(Double(truncating: NSDecimalNumber(decimal: op)))) / Decimal.pi * 180
+            }
+        },
+        "cosh⁻¹": Operation.UnaryOp{
+            op in
+            if isUsingRad {
+                return Decimal(acosh(Double(truncating: NSDecimalNumber(decimal: op))))
+            } else {
+                return Decimal(acosh(Double(truncating: NSDecimalNumber(decimal: op)))) / Decimal.pi * 180
+            }
+        },
+        "tanh⁻¹": Operation.UnaryOp{
+            op in
+            if isUsingRad {
+                return Decimal(atanh(Double(truncating: NSDecimalNumber(decimal: op))))
+            } else {
+                return Decimal(atanh(Double(truncating: NSDecimalNumber(decimal: op)))) / Decimal.pi * 180
+            }
         }
     ]
     
