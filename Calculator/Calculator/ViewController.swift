@@ -10,8 +10,14 @@ import UIKit
 class ViewController: UIViewController {
 
     @IBOutlet weak var displayLabel: UILabel!
-    
     @IBOutlet weak var buttonSets: UIButton!
+    @IBOutlet weak var rootStackView: UIStackView!
+    @IBOutlet weak var resultLabel: UIView!
+    @IBOutlet weak var buttonsSetsView: UIView!
+    
+    var buttonWidth: CGFloat = 0, buttonHeight: CGFloat = 0
+    var resultLabelHeight: CGFloat = 0
+    var rootStackWidth: CGFloat = 0, rootStackHeight: CGFloat = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -19,6 +25,8 @@ class ViewController: UIViewController {
         self.displayLabel.text! = "0"
         UIDevice.current.beginGeneratingDeviceOrientationNotifications()
         NotificationCenter.default.addObserver(self, selector: #selector(self.receivedRotation), name: UIDevice.orientationDidChangeNotification, object: nil)
+        resultLabel.autoresizesSubviews = true
+        buttonsSetsView.autoresizesSubviews = true
         receivedRotation()
     }
     
@@ -37,15 +45,36 @@ class ViewController: UIViewController {
         }
         */
         //changeRoundedCorner(buttonToChange: buttonSets)
-        for i in 1...49 {
+        rootStackWidth = rootStackView.frame.width
+        rootStackHeight = rootStackView.frame.height
+        buttonWidth = floor((rootStackWidth - 90) / 5) / 2
+        print("rootStackWidth", rootStackWidth, "rootStackHeight", rootStackHeight, "buttonWidth", buttonWidth, "buttonHeight", buttonHeight, "resultLabelHeight", resultLabelHeight)
+        rootStackWidth = buttonWidth * 10 + 90
+        buttonHeight = buttonWidth
+        resultLabelHeight = (rootStackHeight - 40 - buttonWidth * 5)
+        print("rootStackWidth", rootStackWidth, "rootStackHeight", rootStackHeight, "buttonWidth", buttonWidth, "buttonHeight", buttonHeight, "resultLabelHeight", resultLabelHeight)
+        if resultLabelHeight * 4 < rootStackHeight {
+            resultLabelHeight = rootStackHeight / 4
+            buttonHeight = floor((rootStackHeight - resultLabelHeight - 40) / 5 * 2) / 2
+            resultLabelHeight = rootStackHeight - buttonHeight * 5 - 40
+        }
+        print("rootStackWidth", rootStackWidth, "rootStackHeight", rootStackHeight, "buttonWidth", buttonWidth, "buttonHeight", buttonHeight, "resultLabelHeight", resultLabelHeight)
+        
+        resultLabel.
+        resultLabel.sizeThatFits(CGSize(width: rootStackWidth, height: resultLabelHeight))
+        buttonsSetsView.sizeThatFits(CGSize(width: rootStackWidth, height: rootStackHeight - resultLabelHeight))
+        changeRoundedCorner(buttonToChange: (view.viewWithTag(1) as? UIButton)!, buttonSize: CGSize(width: buttonWidth * 2 + 10, height: buttonHeight))
+        for i in 2...49 {
             if let buttonFound = view.viewWithTag(i) as? UIButton {
-                changeRoundedCorner(buttonToChange: (buttonFound))
+                changeRoundedCorner(buttonToChange: (buttonFound), buttonSize: CGSize(width: buttonWidth, height: buttonHeight))
             }
         }
+        print(resultLabel.frame.height, buttonsSetsView.frame.height)
     }
     
-    func changeRoundedCorner(buttonToChange: UIButton) {
-        buttonToChange.layer.cornerRadius = min(buttonToChange.frame.height, (buttonToChange.frame.width)) / 2
+    func changeRoundedCorner(buttonToChange: UIButton, buttonSize: CGSize) {
+        buttonToChange.layer.cornerRadius = min(buttonSize.height, buttonSize.width) / 2
+        print("button", buttonToChange.titleLabel!.text, "height", buttonToChange.frame.height, "width", buttonToChange.frame.width, "cornerR", buttonToChange.layer.cornerRadius)
     }
     
     var digitOnDisplay: String {
@@ -97,8 +126,10 @@ class ViewController: UIViewController {
                             return
                         }
                     }
-                    if abs(Double(truncating: NSDecimalNumber(decimal: result))) < 10e-15 {
+                    if abs(Double(truncating: NSDecimalNumber(decimal: result))) < 10e-14 {
                         digitOnDisplay = "0"
+                    } else if Double(truncating: NSDecimalNumber(decimal: result)) - floor(Double(truncating: NSDecimalNumber(decimal: result))) < 10e-14 {
+                        digitOnDisplay = String(Int(floor(Double(truncating: NSDecimalNumber(decimal: result)))))
                     } else if (String(digitOnDisplay.prefix(dotIndex + 17)).suffix(1) <= "4") {
                         digitOnDisplay = String(digitOnDisplay.prefix(dotIndex + 16))
                     } else {

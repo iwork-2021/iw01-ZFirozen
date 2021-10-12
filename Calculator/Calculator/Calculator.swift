@@ -127,15 +127,62 @@ class Calculator: NSObject {
         "mc": Operation.StatusOp,
         "m+": Operation.UnaryOp{
             op in
-            memoryValue = memoryValue + op
+            memoryValue += op
             return op
         },
         "m-": Operation.UnaryOp{
             op in
-            memoryValue = memoryValue - op
+            memoryValue -= op
             return op
         },
-        "mr": Operation.Constant(memoryValue)
+        "mr": Operation.UnaryOp{
+            _ in
+            return memoryValue
+        },
+        "x²": Operation.UnaryOp{
+            op in
+            return op * op
+        },
+        "x³": Operation.UnaryOp{
+            op in
+            return op * op * op
+        },
+        "xʸ": Operation.BinaryOp{
+            (op1, op2) in
+            return Decimal(pow(Double(truncating: NSDecimalNumber(decimal: op1)), Double(truncating: NSDecimalNumber(decimal: op2))))
+        },
+        "eˣ": Operation.UnaryOp{
+            op in
+            return Decimal(pow(M_E, Double(truncating: NSDecimalNumber(decimal: op))))
+        },
+        "10ˣ": Operation.UnaryOp{
+            op in
+            return Decimal(pow(10, Double(truncating: NSDecimalNumber(decimal: op))))
+        },
+        "¹⁄ₓ": Operation.UnaryOp{
+            op in
+            return 1 / op
+        },
+        "²√x": Operation.UnaryOp{
+            op in
+            return Decimal(sqrt(Double(truncating: NSDecimalNumber(decimal: op))))
+        },
+        "³√x": Operation.UnaryOp{
+            op in
+            return Decimal(cbrt(Double(truncating: NSDecimalNumber(decimal: op))))
+        },
+        "ʸ√x": Operation.BinaryOp{
+            (op1, op2) in
+            return Decimal(pow(Double(truncating: NSDecimalNumber(decimal: op1)), Double(truncating: NSDecimalNumber(decimal: 1 / op2))))
+        },
+        "ln": Operation.UnaryOp{
+            op in
+            return Decimal(log(Double(truncating: NSDecimalNumber(decimal: op))))
+        },
+        "log₁₀": Operation.UnaryOp{
+            op in
+            return Decimal(log10(Double(truncating: NSDecimalNumber(decimal: op))))
+        }
     ]
     
     struct Intermediate {
