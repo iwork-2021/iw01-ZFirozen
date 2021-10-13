@@ -56,7 +56,6 @@ class ViewController: UIViewController {
             rootStackWidth = rootStackView.frame.height
             rootStackHeight = rootStackView.frame.width
         }
-        print(1)
         case .portraitUpsideDown: if UIDevice.current.userInterfaceIdiom == UIUserInterfaceIdiom.phone {
             return
         } else {
@@ -65,33 +64,24 @@ class ViewController: UIViewController {
                 rootStackHeight = rootStackView.frame.width
             }
         }
-        print(2)
         case .landscapeLeft: if rootStackWidth < rootStackHeight {
             rootStackWidth = rootStackView.frame.height
             rootStackHeight = rootStackView.frame.width
         }
-        print(3)
         case .landscapeRight: if rootStackWidth < rootStackHeight {
             rootStackWidth = rootStackView.frame.height
             rootStackHeight = rootStackView.frame.width
         }
-        print(4)
         case .faceUp: if rootStackWidth > rootStackHeight {
             rootStackWidth = rootStackView.frame.height
             rootStackHeight = rootStackView.frame.width
         }
-        print(5)
         case .faceDown: if rootStackWidth > rootStackHeight {
             rootStackWidth = rootStackView.frame.height
             rootStackHeight = rootStackView.frame.width
         }
-        print(6)
-        case .unknown: if rootStackWidth > rootStackHeight {
-            rootStackWidth = rootStackView.frame.height
-            rootStackHeight = rootStackView.frame.width
-        }
-        print(7)
-        default: print(8)
+        case .unknown: return
+        default: return
         }
         
         //changeRoundedCorner(buttonToChange: buttonSets)
@@ -144,6 +134,9 @@ class ViewController: UIViewController {
         buttonToChange.layer.cornerRadius = min(buttonSize.height, buttonSize.width) / 2
     }
     
+    var lastResult: Decimal = 0
+    var isLastResultValid: Bool = false
+    
     var digitOnDisplay: String {
         get {
             return self.displayLabel.text!
@@ -161,6 +154,15 @@ class ViewController: UIViewController {
         } else {
             digitOnDisplay = sender.currentTitle!
             inTypingMode = true
+        }
+        if (view.viewWithTag(16) as? UIButton)!.titleLabel!.text == "AC" {
+            (view.viewWithTag(16) as? UIButton)!.setTitle("C", for: .normal)
+        }
+    }
+    
+    @IBAction func titleSwitchACAndC(_ sender: UIButton) {
+        if sender.titleLabel!.text == "C" {
+            sender.setTitle("AC", for: .normal)
         }
     }
     
@@ -204,8 +206,16 @@ class ViewController: UIViewController {
     let calculator = Calculator()
     @IBAction func operatorTouched(_ sender: UIButton) {
         if let op = sender.currentTitle {
-            if let result = calculator.performOperation(operation: op, operand: Decimal.init(string: digitOnDisplay) ?? 0) {
-                digitOnDisplay = String(NSDecimalNumber(decimal: result).stringValue)
+            var operand: Decimal
+            if isLastResultValid && calculator.isArithmeticSymbol(operation: op) {
+                operand = lastResult
+            } else {
+                operand = Decimal.init(string: digitOnDisplay) ?? 0
+            }
+            isLastResultValid = false
+            if let result = calculator.performOperation(operation: op, operand: operand, haveTyped: inTypingMode) {
+                lastResult = result
+                digitOnDisplay = String(NSDecimalNumber(decimal: lastResult).stringValue)
                 let dotIndex = digitOnDisplay.findFirst(".")
                 if digitOnDisplay.findFirst(".") != -1 && digitOnDisplay.count - dotIndex > 15 {
                     var tempZeroString = ""
@@ -219,21 +229,31 @@ class ViewController: UIViewController {
                         }
                         if String(String(digitOnDisplay.suffix(digitOnDisplay.count - dotIndex - 1)).prefix(digitOnDisplay.count - dotIndex - 2)) == tempZeroString {
                             digitOnDisplay = "1e-" + String(digitOnDisplay.count - dotIndex - 1)
+                            inTypingMode = false
+                            isLastResultValid = true
                             return
                         }
                     }
-                    if abs(Double(truncating: NSDecimalNumber(decimal: result))) < 10e-14 {
+                    if abs(Double(truncating: NSDecimalNumber(decimal: lastResult))) < 10e-14 {
                         digitOnDisplay = "0"
-                    } else if Double(truncating: NSDecimalNumber(decimal: result)) - floor(Double(truncating: NSDecimalNumber(decimal: result))) < 10e-14 {
-                        digitOnDisplay = String(Int(floor(Double(truncating: NSDecimalNumber(decimal: result)))))
+                        isLastResultValid = false
+                    } else if Double(truncating: NSDecimalNumber(decimal: lastResult)) - floor(Double(truncating: NSDecimalNumber(decimal: lastResult))) < 10e-14 {
+                        digitOnDisplay = String(Int(floor(Double(truncating: NSDecimalNumber(decimal: lastResult)))))
+                        isLastResultValid = false
                     } else if (String(digitOnDisplay.prefix(dotIndex + 17)).suffix(1) <= "4") {
                         digitOnDisplay = String(digitOnDisplay.prefix(dotIndex + 16))
+                        isLastResultValid = true
                     } else {
                         let lastChar = String(String(digitOnDisplay.prefix(dotIndex + 16)).suffix(1))
                         digitOnDisplay = String(digitOnDisplay.prefix(dotIndex + 15))
                         digitOnDisplay.append(String(Int(lastChar)! + 1))
+                        isLastResultValid = true
                     }
+                } else {
+                    isLastResultValid = false
                 }
+            } else {
+                
             }
             inTypingMode = false
         }

@@ -163,6 +163,7 @@
                                                                 </state>
                                                                 <connections>
                                                                     <action selector="operatorTouched:" destination="BYZ-38-t0r" eventType="touchUpInside" id="AJb-Sk-GLm"/>
+                                                                    <action selector="titleSwitchACAndC:" destination="BYZ-38-t0r" eventType="touchUpInside" id="h7U-cb-fMl"/>
                                                                 </connections>
                                                             </button>
                                                             <button opaque="NO" tag="17" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="AR0-4l-JYz">
