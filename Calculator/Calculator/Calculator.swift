@@ -16,7 +16,7 @@ class Calculator: NSObject {
     }
     
     var memoryValue: Decimal = 0
-    var isUsingRad: Bool = false, lastOpIsMr: Bool = false
+    var isUsingRad: Bool = false, lastOpIsInsertedValue: Bool = false
     var haveLeftParenthese: Int = 0
     
     lazy var operations = [
@@ -272,54 +272,57 @@ class Calculator: NSObject {
                 } else {
                     pendingOp = Intermediate(firstOp: operand, waitingOperation: function)
                 }
-                lastOpIsMr = false
+                lastOpIsInsertedValue = false
                 return nil
             case .Constant(let value):
-                lastOpIsMr = false
+                lastOpIsInsertedValue = true
                 return value
             case .StatusOp:
                 switch operation {
-                case "Rand": lastOpIsMr = false
+                case "Rand": lastOpIsInsertedValue = true
                     return Decimal(Double.random(in: 0...1))
                 case "Rad": fallthrough
-                case "Deg": lastOpIsMr = false
+                case "Deg": lastOpIsInsertedValue = false
                     isUsingRad = !isUsingRad
                     return nil
-                case "(": lastOpIsMr = false
+                case "(": lastOpIsInsertedValue = false
                     haveLeftParenthese = haveLeftParenthese + 1
                     return nil
-                case ")": lastOpIsMr = false
+                case ")": lastOpIsInsertedValue = false
                     if haveLeftParenthese > 0 {
                         haveLeftParenthese = haveLeftParenthese - 1
                         if pendingOp != nil {
-                            return pendingOp!.waitingOperation(pendingOp!.firstOp, operand)
+                            lastOp = Intermediate(firstOp: operand, waitingOperation: pendingOp!.waitingOperation)
+                            let returnValue = pendingOp!.waitingOperation(pendingOp!.firstOp, operand)
+                            pendingOp = nil
+                            return returnValue
                         } else {
                             return operand
                         }
                     } else {
                         return nil
                     }
-                case "mc": lastOpIsMr = false
+                case "mc": lastOpIsInsertedValue = false
                     memoryValue = 0
                     return nil
-                case "mr": lastOpIsMr = true
+                case "mr": lastOpIsInsertedValue = true
                     return memoryValue
                 case "=": haveLeftParenthese = 0
                     if pendingOp != nil {
-                        if haveTyped || lastOpIsMr {
-                            lastOpIsMr = false
+                        if haveTyped || lastOpIsInsertedValue {
+                            lastOpIsInsertedValue = false
                             lastOp = Intermediate(firstOp: operand, waitingOperation: pendingOp!.waitingOperation)
                             let returnValue = pendingOp!.waitingOperation(pendingOp!.firstOp, operand)
                             pendingOp = nil
                             return returnValue
                         } else {
-                            lastOpIsMr = false
+                            lastOpIsInsertedValue = false
                             lastOp = pendingOp
                             pendingOp = nil
                             return lastOp!.waitingOperation(lastOp!.firstOp, lastOp!.firstOp)
                         }
                     } else if lastOp != nil {
-                        lastOpIsMr = false
+                        lastOpIsInsertedValue = false
                         if lastOp!.firstOp == Decimal.nan {
                             lastOp!.firstOp = operand
                             return operand
@@ -327,15 +330,15 @@ class Calculator: NSObject {
                             return lastOp!.waitingOperation(operand, lastOp!.firstOp)
                         }
                     } else {
-                        lastOpIsMr = false
+                        lastOpIsInsertedValue = false
                         return operand
                     }
-                case "AC": lastOpIsMr = false
+                case "AC": lastOpIsInsertedValue = false
                     pendingOp = nil
                     lastOp = nil
                     haveLeftParenthese = 0
                     return 0
-                case "C": lastOpIsMr = false
+                case "C": lastOpIsInsertedValue = false
                     haveLeftParenthese = 0
                     if lastOp != nil {
                         lastOp!.firstOp = Decimal.nan
@@ -348,15 +351,15 @@ class Calculator: NSObject {
                     } else {
                         return 0
                     }
-                default: lastOpIsMr = false
+                default: lastOpIsInsertedValue = false
                     return nil
                 }
             case .UnaryOp(let function):
-                lastOpIsMr = false
+                lastOpIsInsertedValue = false
                 return function(operand)
             }
         }
-        lastOpIsMr = false
+        lastOpIsInsertedValue = false
         return nil
     }
 }
